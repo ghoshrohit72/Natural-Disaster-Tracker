@@ -1,43 +1,70 @@
-import GoogleMapReact from 'google-map-react';
-import LocationMarker from './LocationMarker';
-import VolacanoLocator from './VolcanoLocator';
+import { useState } from 'react'
+import GoogleMapReact from 'google-map-react'
+import FireLocationMarker from './icons/FireLocationMarker'
+import SevereStormLocationMarker from './icons/SevereStormLocationMarker'
+import VolcanoLocationMarker from './icons/VolcanoLocationMarker'
+import LocationInfoBox from './LocationInfoBox'
+import IcebergLocationMarker from './icons/IcebergLocationMarker'
 
-const Map = ( {eventData, center, zoom}) => {
+// This is the map component of the tracker
+const Map = ({ eventData, center, zoom }) => {
+    const [locationInfo, setLocationInfo] = useState(null)
 
-    const markers = eventData.map((ev) => 
-    {
-        if(ev.categories[0].id === "wildfires")
-        {
-            return <LocationMarker lat={ev.geometry[0].coordinates[1]} lng={ev.geometry[0].coordinates[0]} />
-        }
-        else if(ev.categories[0].id === "volcanoes")
-        {
-            return <VolacanoLocator lat={ev.geometry[0].coordinates[1]} lng={ev.geometry[0].coordinates[0]} />
-        }
-        return null;
+    const markers = eventData.map((ev) => {
+        // Wildfire markers
+        if(ev.categories[0].id === 8) {
+            return <FireLocationMarker lat={ev.geometries[0].coordinates[1]} lng={ev.geometries[0].coordinates[0]}
+                     onClick={() => setLocationInfo({ id: ev.id, title: ev.title})} />;
+
+        // Severe Storm markers    
+        } else if (ev.categories[0].id === 10) {
+            return <SevereStormLocationMarker lat={ev.geometries[0].coordinates[1]} lng={ev.geometries[0].coordinates[0]}
+             onClick={() => setLocationInfo({ id: ev.id, title: ev.title})} />   
+             
+              
+        // Iceberg markers
+        } else if (ev.categories[0].id === 15) {
+            return <IcebergLocationMarker lat={ev.geometries[0].coordinates[1]} lng={ev.geometries[0].coordinates[0]}
+             onClick={() => setLocationInfo({ id: ev.id, title: ev.title})} />   
+
+        // Volcano Marker (Note 'Dukono Volcanoes throw an error from API)
+        } else if (ev.categories[0].id ===  12 && ev.title !== 'Dukono Volcano, Indonesia') {
+            return <VolcanoLocationMarker lat={ev.geometries[0].coordinates[1]} lng={ev.geometries[0].coordinates[0]}
+                    onClick={() => setLocationInfo({ id: ev.id, title: ev.title})} />     
+        } else {
+            return null
+        }    
+        
     })
+
 
 
     return (
         <div className="map">
             <GoogleMapReact
-                bootstrapURLKeys= {{ key: 'AIzaSyCAdaUOSx0OHD4PSrCPDRmGwuOkaPTehMs' }}
-                defaultCenter={ center}
-                defaultZoom={ zoom }
+                bootstrapURLKeys={{
+                    key: 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+                }}
+                defaultCenter={ center }
+                    defaultZoom={ zoom }
             >
-                    {markers}
+
+            {markers}
+                
             </GoogleMapReact>
+            {locationInfo && <LocationInfoBox info={locationInfo} />}
+
         </div>
     )
 }
 
+// Set default location
 Map.defaultProps = {
     center: {
-          lat: 42.3265,
-          lng: -122
-
+        lat: 37.7740,
+        lng: -122.4351,
     },
     zoom: 6
-}
+ }
 
 export default Map;
